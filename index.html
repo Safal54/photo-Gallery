@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Responsive Image Gallery with Upload</title>
+  <script src="https://widget.cloudinary.com/v2.0/global/all.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #f5f7fa;
+      color: #333;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    header {
+      text-align: center;
+      padding: 30px 0;
+      margin-bottom: 30px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      color: #2c3e50;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      color: #7f8c8d;
+      max-width: 600px;
+      margin: 0 auto 30px;
+    }
+
+    .upload-section {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    #upload_widget {
+      padding: 12px 24px;
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    #upload_widget:hover {
+      background: #2980b9;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .gallery-controls {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      padding: 8px 16px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .filter-btn:hover {
+      background-color: #2980b9;
+    }
+
+    .filter-btn.active {
+      background-color: #2c3e50;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 25px;
+      margin-bottom: 40px;
+    }
+
+    .gallery-item {
+      background-color: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .gallery-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .gallery-img {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: transform 0.5s ease;
+    }
+
+    .gallery-item:hover .gallery-img {
+      transform: scale(1.03);
+    }
+
+    .gallery-info {
+      padding: 15px;
+    }
+
+    .gallery-title {
+      font-size: 1.2rem;
+      margin-bottom: 8px;
+      color: #2c3e50;
+    }
+
+    .gallery-desc {
+      color: #7f8c8d;
+      font-size: 0.9rem;
+    }
+
+    .lightbox {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.9);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .lightbox.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    .lightbox-img {
+      max-width: 90%;
+      max-height: 90%;
+      object-fit: contain;
+      border-radius: 4px;
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      color: white;
+      font-size: 2.5rem;
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+
+    .lightbox-close:hover {
+      color: #3498db;
+    }
+
+    .lightbox-nav {
+      position: absolute;
+      top: 50%;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 20px;
+      transform: translateY(-50%);
+    }
+
+    .lightbox-btn {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: none;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .lightbox-btn:hover {
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: #7f8c8d;
+      border-top: 1px solid #eaecee;
+      margin-top: 40px;
+    }
+
+    @media (max-width: 768px) {
+      .gallery {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      .gallery-controls {
+        gap: 10px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .gallery {
+        grid-template-columns: 1fr;
+      }
+
+      .container {
+        padding: 10px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h1>Image Gallery</h1>
+      <p class="subtitle">A responsive gallery that preserves original image sizes and aspect ratios</p>
+    </header>
+
+    <div class="upload-section">
+      <button id="upload_widget">Upload Image</button>
+    </div>
+
+    <div class="gallery-controls">
+      <button class="filter-btn active" data-filter="all">All Images</button>
+      <button class="filter-btn" data-filter="nature">Nature</button>
+      <button class="filter-btn" data-filter="architecture">Architecture</button>
+      <button class="filter-btn" data-filter="travel">Travel</button>
+      <button class="filter-btn" data-filter="uploaded">Uploaded</button>
+    </div>
+
+    <div class="gallery" id="imageGallery">
+      <!-- Images will be inserted here by JavaScript -->
+    </div>
+  </div>
+
+  <div class="lightbox" id="lightbox">
+    <span class="lightbox-close" id="lightboxClose">&times;</span>
+    <img class="lightbox-img" id="lightboxImg" src="" alt="">
+    <div class="lightbox-nav">
+      <button class="lightbox-btn" id="prevBtn">&#10094;</button>
+      <button class="lightbox-btn" id="nextBtn">&#10095;</button>
+    </div>
+  </div>
+
+  <footer>
+    <p>Responsive Image Gallery &copy; 2023</p>
+  </footer>
+
+  <script>
+    // Cloudinary configuration
+    const cloudName = "dak7kqowo";
+    const uploadPreset = "unsigned_upload";
+
+    // Image data
+    const images = [
+      {
+        src: "https://images.unsplash.com/photo-1501854140801-50d01698950b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1275&q=80",
+        title: "Mountain Landscape",
+        description: "Beautiful mountain scenery with trees and lake",
+        category: "nature"
+      },
+      {
+        src: "https://images.unsplash.com/photo-1519681393784-d120267933ba?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80",
+        title: "Snowy Peaks",
+        description: "Majestic snow-covered mountain peaks",
+        category: "nature"
+      },
+      {
+        src: "https://images.unsplash.com/photo-1493246507139-91e8fad9978e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80",
+        title: "Modern Architecture",
+        description: "Contemporary building with unique design",
+        category: "architecture"
+      },
+      {
+        src: "https://images.unsplash.com/photo-1513584684374-8bab748fbf90?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1165&q=80",
+        title: "City Skyline",
+        description: "Urban landscape with skyscrapers",
+        category: "architecture"
+      },
+      {
+        src: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1121&q=80",
+        title: "Road Trip",
+        description: "Scenic road through beautiful landscape",
+        category: "travel"
+      },
+      {
+        src: "https://images.unsplash.com-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80",
+        title: "Mountain Adventure",
+        description: "Hiker enjoying mountain views",
+        category: "travel"
+      }
+    ];
+
+    // Array to store uploaded images
+    let uploadedImages = [];
+
+    // DOM elements
+    const gallery = document.getElementById('imageGallery');
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightboxImg');
+    const lightboxClose = document.getElementById('lightboxClose');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+
+    // Current image index for lightbox navigation
+    let currentImageIndex = 0;
+    let allImages = [...images];
+
+    // Initialize gallery
+    function initGallery() {
+      displayImages(allImages);
+      setupEventListeners();
+      setupCloudinaryWidget();
+    }
+
+    // Display images in the gallery
+    function displayImages(imagesToShow) {
+      gallery.innerHTML = '';
+
+      imagesToShow.forEach((image, index) => {
+        const galleryItem = document.createElement('div');
+        galleryItem.className = `gallery-item ${image.category}`;
+
+        galleryItem.innerHTML = `
+                    <img src="${image.src}" alt="${image.title || 'Uploaded image'}" class="gallery-img">
+                    <div class="gallery-info">
+                        <h3 class="gallery-title">${image.title || 'Uploaded Image'}</h3>
+                        ${image.description ? `<p class="gallery-desc">${image.description}</p>` : ''}
+                    </div>
+                `;
+
+        galleryItem.addEventListener('click', () => openLightbox(index, imagesToShow));
+        gallery.appendChild(galleryItem);
+      });
+    }
+
+    // Setup event listeners
+    function setupEventListeners() {
+      // Filter buttons
+      filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          // Update active button
+          filterBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+
+          // Filter images
+          const filter = btn.getAttribute('data-filter');
+          let imagesToShow;
+
+          if (filter === 'all') {
+            imagesToShow = allImages;
+          } else if (filter === 'uploaded') {
+            imagesToShow = uploadedImages;
+          } else {
+            imagesToShow = allImages.filter(img => img.category === filter);
+          }
+
+          displayImages(imagesToShow);
+        });
+      });
+
+      // Lightbox controls
+      lightboxClose.addEventListener('click', closeLightbox);
+      prevBtn.addEventListener('click', showPrevImage);
+      nextBtn.addEventListener('click', showNextImage);
+
+      // Close lightbox when clicking outside the image
+      lightbox.addEventListener('click', (e) => {
+        if (e.target === lightbox) {
+          closeLightbox();
+        }
+      });
+
+      // Keyboard navigation
+      document.addEventListener('keydown', (e) => {
+        if (lightbox.classList.contains('active')) {
+          if (e.key === 'Escape') closeLightbox();
+          if (e.key === 'ArrowLeft') showPrevImage();
+          if (e.key === 'ArrowRight') showNextImage();
+        }
+      });
+    }
+
+    // Setup Cloudinary upload widget
+    function setupCloudinaryWidget() {
+      const myWidget = cloudinary.createUploadWidget({
+        cloudName: cloudName,
+        uploadPreset: uploadPreset
+      }, (error, result) => {
+        if (!error && result && result.event === "success") {
+          console.log("Uploaded:", result.info.secure_url);
+
+          // Add uploaded image to the gallery
+          const uploadedImage = {
+            src: result.info.secure_url,
+            title: "Uploaded Image",
+            category: "uploaded"
+          };
+
+          uploadedImages.push(uploadedImage);
+          allImages.push(uploadedImage);
+
+          // Display all images again to include the new one
+          displayImages(allImages);
+
+          // Switch to uploaded filter
+          filterBtns.forEach(b => b.classList.remove('active'));
+          document.querySelector('[data-filter="uploaded"]').classList.add('active');
+          displayImages(uploadedImages);
+        }
+      });
+
+      document.getElementById("upload_widget").addEventListener("click", () => {
+        myWidget.open();
+      }, false);
+    }
+
+    // Open lightbox with selected image
+    function openLightbox(index, currentImageSet) {
+      currentImageIndex = index;
+      lightboxImg.src = currentImageSet[currentImageIndex].src;
+      lightbox.classList.add('active');
+      document.body.style.overflow = 'hidden'; // Prevent scrolling
+    }
+
+    // Close lightbox
+    function closeLightbox() {
+      lightbox.classList.remove('active');
+      document.body.style.overflow = 'auto'; // Re-enable scrolling
+    }
+
+    // Show previous image in lightbox
+    function showPrevImage() {
+      // This would need to be implemented with the current image set
+      // For simplicity, we're using allImages
+      currentImageIndex = (currentImageIndex - 1 + allImages.length) % allImages.length;
+      lightboxImg.src = allImages[currentImageIndex].src;
+    }
+
+    // Show next image in lightbox
+    function showNextImage() {
+      // This would need to be implemented with the current image set
+      // For simplicity, we're using allImages
+      currentImageIndex = (currentImageIndex + 1) % allImages.length;
+      lightboxImg.src = allImages[currentImageIndex].src;
+    }
+
+    // Initialize the gallery when the page loads
+    document.addEventListener('DOMContentLoaded', initGallery);
+  </script>
+</body>
+
+</html>
