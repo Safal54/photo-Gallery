@@ -15,6 +15,17 @@ export async function handler(event) {
     };
   }
 
+  // Only allow POST requests
+  if (event.httpMethod !== 'POST') {
+    return {
+      statusCode: 405,
+      headers: {
+        'Access-Control-Allow-Origin': '*'
+      },
+      body: JSON.stringify({ error: 'Method not allowed' })
+    };
+  }
+
   const sql = neon(process.env.DATABASE_URL);
 
   try {
