@@ -407,17 +407,14 @@
       &copy; 2024 My Memories. All rights reserved.
     </p>
   </footer>
-  <script>
+ // ... (previous HTML and CSS remains the same)
+
+<script>
     // Cloudinary configuration
     const cloudName = "dak7kqowo";
     const uploadPreset = "vd9hzqkh";
 
-    // // Supabase configuration
-    // const supabaseUrl = 'https://lickrfzfsildshrxgtre.supabase.co';
-    // const supabaseKey = 'sb_publishable_6HzxgzpQpm1R4RGB6oHwnA_CkPux1-D';
-    // const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-        // Supabase configuration
+    // Supabase configuration
     const supabaseUrl = 'https://lickrfzfsildshrxgtre.supabase.co';
     const supabaseKey = 'sb_publishable_6HzxgzpQpm1R4RGB6oHwnA_CkPux1-D';
     const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
@@ -432,9 +429,7 @@
     const imageCounter = document.getElementById('imageCounter');
 
     let uploadedImages = [];
-    let allImages = [];
     let currentImageIndex = 0;
-    let currentImageSet = allImages;
     let touchStartX = 0;
     let touchStartY = 0;
 
@@ -450,7 +445,7 @@
       await loadImagesFromSupabase();
       setupEventListeners();
       setupCloudinaryWidget();
-      displayImages(allImages);
+      displayImages(uploadedImages);
     }
 
     // Load images from Supabase (newest first)
@@ -463,13 +458,22 @@
 
         if (error) throw error;
 
-        uploadedImages = data || [];
-        allImages = uploadedImages; // Only show user's images
-        console.log('Loaded memories from Supabase:', uploadedImages.length);
+        // Use Set to remove duplicates based on src
+        const uniqueImages = [];
+        const seenUrls = new Set();
+        
+        data.forEach(image => {
+          if (!seenUrls.has(image.src)) {
+            seenUrls.add(image.src);
+            uniqueImages.push(image);
+          }
+        });
+
+        uploadedImages = uniqueImages;
+        console.log('Loaded unique memories from Supabase:', uploadedImages.length);
       } catch (error) {
         console.error('Error loading from Supabase:', error);
         uploadedImages = [];
-        allImages = [];
       }
     }
 
@@ -577,14 +581,17 @@
             // Save to Supabase
             const savedImage = await saveImageToSupabase(imageData);
 
-            // Add to beginning of arrays (newest first)
-            uploadedImages.unshift(savedImage);
-            allImages.unshift(savedImage);
-
-            // Update display
-            displayImages(allImages);
-
-            console.log('Memory saved and displayed');
+            // Check for duplicates before adding
+            const isDuplicate = uploadedImages.some(img => img.src === savedImage.src);
+            if (!isDuplicate) {
+              // Add to beginning of array (newest first)
+              uploadedImages.unshift(savedImage);
+              // Update display
+              displayImages(uploadedImages);
+              console.log('Memory saved and displayed');
+            } else {
+              console.log('Duplicate memory found, not adding to gallery');
+            }
           } catch (error) {
             console.error('Failed to save to Supabase:', error);
             alert('Memory uploaded but failed to save. Please try again.');
@@ -694,9 +701,8 @@
     // Open lightbox with selected media
     function openLightbox(index, mediaSet) {
       currentImageIndex = index;
-      currentImageSet = mediaSet;
 
-      const currentMedia = currentImageSet[currentImageIndex];
+      const currentMedia = mediaSet[currentImageIndex];
       const isVideoFile = isVideo(currentMedia.src);
 
       // Clear previous content
@@ -735,7 +741,7 @@
 
       lightbox.classList.add('active');
       document.body.style.overflow = 'hidden';
-      updateImageCounter();
+      updateImageCounter(mediaSet);
     }
 
     // Close lightbox
@@ -754,25 +760,23 @@
 
     // Show previous media
     function showPrevImage() {
-      currentImageIndex = (currentImageIndex - 1 + currentImageSet.length) % currentImageSet.length;
-      openLightbox(currentImageIndex, currentImageSet);
+      currentImageIndex = (currentImageIndex - 1 + uploadedImages.length) % uploadedImages.length;
+      openLightbox(currentImageIndex, uploadedImages);
     }
 
     // Show next media
     function showNextImage() {
-      currentImageIndex = (currentImageIndex + 1) % currentImageSet.length;
-      openLightbox(currentImageIndex, currentImageSet);
+      currentImageIndex = (currentImageIndex + 1) % uploadedImages.length;
+      openLightbox(currentImageIndex, uploadedImages);
     }
 
     // Update image counter
-    function updateImageCounter() {
-      imageCounter.textContent = `${currentImageIndex + 1} / ${currentImageSet.length}`;
+    function updateImageCounter(mediaSet) {
+      imageCounter.textContent = `${currentImageIndex + 1} / ${mediaSet.length}`;
     }
 
     // Initialize the gallery when the page loads
     document.addEventListener('DOMContentLoaded', initGallery);
-  </script>
+</script>
 </body>
-
 </html>
-
