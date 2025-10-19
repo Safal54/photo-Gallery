@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Romantic Message Board</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&family=Poppins:wght@300;400;500&display=swap"
+    rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(135deg, #f9f0ff 0%, #fce4ec 50%, #f3e5f5 100%);
+      color: #5d4037;
+      line-height: 1.6;
+      padding: 20px;
+      font-family: 'Poppins', sans-serif;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    header {
+      text-align: center;
+      padding: 40px 0;
+      margin-bottom: 30px;
+    }
+
+    h1 {
+      font-family: 'Dancing Script', cursive;
+      font-size: 4rem;
+      color: #8e24aa;
+      margin-bottom: 15px;
+      font-weight: 700;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .subtitle {
+      font-size: 1.3rem;
+      color: #7b1fa2;
+      max-width: 600px;
+      margin: 0 auto 30px;
+      font-weight: 300;
+    }
+
+    .message-form {
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 40px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #6a1b9a;
+      font-weight: 500;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #e1bee7;
+      border-radius: 10px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 1rem;
+      background: rgba(255, 255, 255, 0.9);
+      transition: all 0.3s ease;
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: #8e24aa;
+      box-shadow: 0 0 0 3px rgba(142, 36, 170, 0.2);
+    }
+
+    .submit-btn {
+      padding: 15px 30px;
+      background: linear-gradient(45deg, #e91e63, #9c27b0);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(156, 39, 176, 0.3);
+      font-family: 'Poppins', sans-serif;
+      width: 100%;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(156, 39, 176, 0.4);
+      background: linear-gradient(45deg, #d81b60, #8e24aa);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: 0 4px 15px rgba(156, 39, 176, 0.3);
+    }
+
+    .messages-container {
+      margin-top: 40px;
+    }
+
+    .messages-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .messages-list {
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+
+    .message-card {
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 20px;
+      padding: 25px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      transition: all 0.3s ease;
+    }
+
+    .message-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .message-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      border-bottom: 1px solid rgba(142, 36, 170, 0.2);
+      padding-bottom: 10px;
+    }
+
+    .message-date {
+      color: #8d6e63;
+      font-size: 0.9rem;
+    }
+
+    .message-content {
+      color: #5d4037;
+      font-size: 1.1rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #7b1fa2;
+      font-size: 1.2rem;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #7b1fa2;
+    }
+
+    .empty-state h3 {
+      font-family: 'Dancing Script', cursive;
+      font-size: 2.5rem;
+      margin-bottom: 15px;
+    }
+
+    .empty-state p {
+      font-size: 1.1rem;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .back-btn {
+      position: absolute;
+      top: 30px;
+      left: 30px;
+      padding: 10px 20px;
+      background: rgba(255, 255, 255, 0.7);
+      color: #7b1fa2;
+      border: 2px solid #e1bee7;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 500;
+      backdrop-filter: blur(10px);
+      text-decoration: none;
+    }
+
+    .back-btn:hover {
+      background: rgba(255, 255, 255, 0.9);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    footer {
+      text-align: center;
+      padding: 30px;
+      color: #7b1fa2;
+      border-top: 1px solid rgba(156, 39, 176, 0.2);
+      margin-top: 40px;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    /* Heart animation */
+    .heart {
+      position: fixed;
+      font-size: 20px;
+      pointer-events: none;
+      animation: float 6s ease-in-out infinite;
+      opacity: 0.7;
+      z-index: -1;
+    }
+
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0) rotate(0deg);
+      }
+
+      50% {
+        transform: translateY(-20px) rotate(180deg);
+      }
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 3rem;
+      }
+
+      .message-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .back-btn {
+        position: relative;
+        top: auto;
+        left: auto;
+        margin-bottom: 20px;
+        display: inline-block;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 10px;
+      }
+
+      h1 {
+        font-size: 2.5rem;
+      }
+
+      .subtitle {
+        font-size: 1.1rem;
+      }
+
+      .message-form {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Floating hearts for romantic effect -->
+  <div class="heart" style="left: 10%; animation-delay: 0s;">❤️</div>
+  <div class="heart" style="left: 20%; animation-delay: 1s;">💖</div>
+  <div class="heart" style="left: 30%; animation-delay: 2s;">💕</div>
+  <div class="heart" style="left: 40%; animation-delay: 3s;">💗</div>
+  <div class="heart" style="left: 50%; animation-delay: 4s;">💓</div>
+  <div class="heart" style="left: 60%; animation-delay: 5s;">💞</div>
+  <div class="heart" style="left: 70%; animation-delay: 0.5s;">💘</div>
+  <div class="heart" style="left: 80%; animation-delay: 1.5s;">💝</div>
+  <div class="heart" style="left: 90%; animation-delay: 2.5s;">❤️</div>
+
+  <div class="container">
+    <a href="index.html" class="back-btn">← Back to Gallery</a>
+
+    <header>
+      <h1>Romantic Message Board</h1>
+      <p class="subtitle">Share your thoughts and feelings with your loved ones</p>
+    </header>
+
+    <div class="message-form">
+      <h2 style="text-align: center; margin-bottom: 25px; color: #8e24aa; font-family: 'Dancing Script', cursive;">Leave
+        a Message</h2>
+      <form id="messageForm">
+        <div class="form-group">
+          <label for="message">Your Message</label>
+          <textarea id="message" placeholder="Write your message here..." required></textarea>
+        </div>
+        <button type="submit" class="submit-btn" id="submitBtn">Send Message 💝</button>
+      </form>
+    </div>
+
+    <div class="messages-container">
+      <div class="messages-header">
+        <h2 style="color: #8e24aa; font-family: 'Dancing Script', cursive; font-size: 2.5rem;">Messages from Loved Ones
+        </h2>
+      </div>
+
+      <div class="messages-list" id="messagesList">
+        <div class="loading">Loading messages...</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>Made with 💖 • Romantic Message Board &copy; 2023</p>
+  </footer>
+
+  <script>
+    // Supabase configuration
+    const supabaseUrl = 'https://lickrfzfsildshrxgtre.supabase.co';
+    const supabaseKey = 'sb_publishable_6HzxgzpQpm1R4RGB6oHwnA_CkPux1-D';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    // DOM elements
+    const messageForm = document.getElementById('messageForm');
+    const messagesList = document.getElementById('messagesList');
+    const submitBtn = document.getElementById('submitBtn');
+
+    // Initialize message board
+    async function initMessageBoard() {
+      await loadMessages();
+      setupEventListeners();
+    }
+
+    // Load messages from Supabase
+    async function loadMessages() {
+      try {
+        const { data, error } = await supabase
+          .from('messages')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        displayMessages(data || []);
+      } catch (error) {
+        console.error('Error loading messages:', error);
+        messagesList.innerHTML = '<div class="empty-state"><p>Sorry, there was an error loading messages. Please try again later.</p></div>';
+      }
+    }
+
+    // Display messages in the list
+    function displayMessages(messages) {
+      if (messages.length === 0) {
+        messagesList.innerHTML = `
+          <div class="empty-state">
+            <h3>No Messages Yet</h3>
+            <p>Be the first to share your thoughts and feelings! 💕</p>
+          </div>
+        `;
+        return;
+      }
+
+      messagesList.innerHTML = '';
+
+      messages.forEach(message => {
+        const messageDate = new Date(message.created_at);
+        const formattedDate = `${messageDate.getFullYear()}/${(messageDate.getMonth() + 1).toString().padStart(2, '0')}/${messageDate.getDate().toString().padStart(2, '0')}-${messageDate.getHours().toString().padStart(2, '0')}:${messageDate.getMinutes().toString().padStart(2, '0')}`;
+
+        const messageCard = document.createElement('div');
+        messageCard.className = 'message-card';
+        messageCard.innerHTML = `
+          <div class="message-header">
+            <span class="message-date">${formattedDate}</span>
+          </div>
+          <div class="message-content">
+            ${message.message}
+          </div>
+        `;
+
+        messagesList.appendChild(messageCard);
+      });
+    }
+
+    // Save message to Supabase
+    async function saveMessageToSupabase(messageData) {
+      try {
+        const { data, error } = await supabase
+          .from('messages')
+          .insert([messageData])
+          .select();
+
+        if (error) throw error;
+        return data[0];
+      } catch (error) {
+        console.error('Error saving message:', error);
+        throw error;
+      }
+    }
+
+    // Event listeners
+    function setupEventListeners() {
+      messageForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const message = document.getElementById('message').value.trim();
+
+        if (!message) {
+          alert('Please write a message before sending.');
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Sending...';
+
+        try {
+          const messageData = {
+            message: message,
+            created_at: new Date().toISOString()
+          };
+
+          await saveMessageToSupabase(messageData);
+
+          // Reset form
+          messageForm.reset();
+
+          // Reload messages
+          await loadMessages();
+
+          // Show success message
+          alert('Your message has been sent successfully! 💖');
+        } catch (error) {
+          console.error('Failed to send message:', error);
+          alert('Sorry, there was an error sending your message. Please try again.');
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Send Message 💝';
+        }
+      });
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', initMessageBoard);
+  </script>
+</body>
+
+</html>
