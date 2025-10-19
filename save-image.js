@@ -1,10 +1,40 @@
-import { neon } from '@netlify/neon';
+// netlify/functions/save-image.js
+import { neon } from '@neondatabase/serverless';
 
 export async function handler(event) {
-  const sql = neon();
+  // Handle CORS
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS'
+      },
+      body: ''
+    };
+  }
+
+  const sql = neon(process.env.DATABASE_URL);
 
   try {
-    const { url } = JSON.parse(event.body);
+    let url;
+    
+    // Parse the request body
+    if (event.body) {
+      const body = JSON.parse(event.body);
+      url = body.url;
+    }
+
+    if (!url) {
+      return {
+        statusCode: 400,
+        headers: {
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ error: "URL is required" })
+      };
+    }
 
     await sql`
       INSERT INTO images (url) VALUES (${url})
@@ -12,13 +42,19 @@ export async function handler(event) {
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ success: true }),
+      headers: {
+        'Access-Control-Allow-Origin': '*'
+      },
+      body: JSON.stringify({ success: true })
     };
   } catch (err) {
-    console.error(err);
+    console.error("Database error:", err);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "Failed to save image" }),
+      headers: {
+        'Access-Control-Allow-Origin': '*'
+      },
+      body: JSON.stringify({ error: "Failed to save image" })
     };
   }
 }
