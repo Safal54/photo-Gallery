@@ -279,187 +279,223 @@
   <footer>
     <p>Cloudinary Image Gallery &copy; 2023</p>
   </footer>
+<script>
+  // Cloudinary configuration
+  const cloudName = "dak7kqowo";
+  const uploadPreset = "vd9hzqkh";
 
-  <script>
-    // Cloudinary configuration
-    const cloudName = "dak7kqowo";
-    const uploadPreset = "vd9hzqkh";
+  // DOM elements
+  const gallery = document.getElementById('imageGallery');
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightboxImg');
+  const lightboxClose = document.getElementById('lightboxClose');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const filterBtns = document.querySelectorAll('.filter-btn');
 
-    // DOM elements
-    const gallery = document.getElementById('imageGallery');
-    const lightbox = document.getElementById('lightbox');
-    const lightboxImg = document.getElementById('lightboxImg');
-    const lightboxClose = document.getElementById('lightboxClose');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    const filterBtns = document.querySelectorAll('.filter-btn');
-
-    // Image data
-    const images = [
-      {
-        src: "https://images.unsplash.com/photo-1501854140801-50d01698950b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1275&q=80",
-        title: "Mountain Landscape",
-        description: "Beautiful mountain scenery with trees and lake",
-        category: "nature"
-      },
-      {
-        src: "https://images.unsplash.com/photo-1519681393784-d120267933ba?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80",
-        title: "Snowy Peaks",
-        description: "Majestic snow-covered mountain peaks",
-        category: "nature"
-      },
-      {
-        src: "https://images.unsplash.com/photo-1493246507139-91e8fad9978e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80",
-        title: "Modern Architecture",
-        description: "Contemporary building with unique design",
-        category: "architecture"
-      },
-      {
-        src: "https://images.unsplash.com/photo-1513584684374-8bab748fbf90?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1165&q=80",
-        title: "City Skyline",
-        description: "Urban landscape with skyscrapers",
-        category: "architecture"
-      },
-      {
-        src: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1121&q=80",
-        title: "Road Trip",
-        description: "Scenic road through beautiful landscape",
-        category: "travel"
-      },
-      {
-        src: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80",
-        title: "Mountain Adventure",
-        description: "Hiker enjoying mountain views",
-        category: "travel"
-      }
-    ];
-
-    // Array to store uploaded images
-    let uploadedImages = [];
-    let allImages = [...images];
-
-    // Current image index for lightbox navigation
-    let currentImageIndex = 0;
-    let currentImageSet = allImages;
-
-    // Initialize gallery
-    function initGallery() {
-      loadCloudinaryImages();
-      setupEventListeners();
-      setupCloudinaryWidget();
+  // Image data
+  const images = [
+    {
+      src: "https://images.unsplash.com/photo-1501854140801-50d01698950b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1275&q=80",
+      title: "Mountain Landscape",
+      description: "Beautiful mountain scenery with trees and lake",
+      category: "nature"
+    },
+    {
+      src: "https://images.unsplash.com/photo-1519681393784-d120267933ba?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80",
+      title: "Snowy Peaks",
+      description: "Majestic snow-covered mountain peaks",
+      category: "nature"
+    },
+    {
+      src: "https://images.unsplash.com/photo-1493246507139-91e8fad9978e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80",
+      title: "Modern Architecture",
+      description: "Contemporary building with unique design",
+      category: "architecture"
+    },
+    {
+      src: "https://images.unsplash.com/photo-1513584684374-8bab748fbf90?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1165&q=80",
+      title: "City Skyline",
+      description: "Urban landscape with skyscrapers",
+      category: "architecture"
+    },
+    {
+      src: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1121&q=80",
+      title: "Road Trip",
+      description: "Scenic road through beautiful landscape",
+      category: "travel"
+    },
+    {
+      src: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80",
+      title: "Mountain Adventure",
+      description: "Hiker enjoying mountain views",
+      category: "travel"
     }
+  ];
 
-    // Load all Cloudinary images via Netlify function
-    async function loadCloudinaryImages() {
-      try {
-        const res = await fetch("/.netlify/functions/get-images");
-        if (res.ok) {
-          const urls = await res.json();
-          
-          // Add Cloudinary images to uploadedImages
-          urls.forEach(url => {
-            const uploadedImage = {
-              src: url,
-              title: "Cloudinary Image",
-              category: "uploaded"
-            };
-            
-            // Check if this image is already in uploadedImages
-            if (!uploadedImages.some(img => img.src === url)) {
-              uploadedImages.push(uploadedImage);
-            }
-          });
-          
-          // Update allImages to include uploaded images
-          allImages = [...images, ...uploadedImages];
-          
-          // Display all images
-          displayImages(allImages);
-        }
-      } catch (err) {
-        console.error("Error loading Cloudinary images:", err);
-        // Fallback: display static images if Cloudinary function fails
-        displayImages(allImages);
-      }
-    }
+  // Array to store uploaded images
+  let uploadedImages = [];
+  let allImages = [...images];
 
-    // Display images in the gallery
-    function displayImages(imagesToShow) {
-      gallery.innerHTML = '';
+  // Current image index for lightbox navigation
+  let currentImageIndex = 0;
+  let currentImageSet = allImages;
 
-      imagesToShow.forEach((image, index) => {
-        const galleryItem = document.createElement('div');
-        galleryItem.className = `gallery-item ${image.category}`;
-
-        galleryItem.innerHTML = `
-          <img src="${image.src}" alt="${image.title || 'Uploaded image'}" class="gallery-img">
-          <div class="gallery-info">
-            <h3 class="gallery-title">${image.title || 'Uploaded Image'}</h3>
-            ${image.description ? `<p class="gallery-desc">${image.description}</p>` : ''}
-          </div>
-        `;
-
-        galleryItem.addEventListener('click', () => openLightbox(index, imagesToShow));
-        gallery.appendChild(galleryItem);
+  // Save image URL to database
+  async function saveImageToDatabase(imageUrl) {
+    try {
+      const response = await fetch('/.netlify/functions/save-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url: imageUrl })
       });
+
+      if (!response.ok) {
+        throw new Error('Failed to save image to database');
+      }
+
+      const result = await response.json();
+      console.log('Image saved to database:', result);
+      return result;
+    } catch (error) {
+      console.error('Error saving image to database:', error);
+      throw error;
     }
+  }
 
-    // Setup event listeners
-    function setupEventListeners() {
-      // Filter buttons
-      filterBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-          // Update active button
-          filterBtns.forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
+  // Initialize gallery
+  function initGallery() {
+    loadCloudinaryImages();
+    setupEventListeners();
+    setupCloudinaryWidget();
+  }
 
-          // Filter images
-          const filter = btn.getAttribute('data-filter');
-          let imagesToShow;
-
-          if (filter === 'all') {
-            imagesToShow = allImages;
-          } else if (filter === 'uploaded') {
-            imagesToShow = uploadedImages;
-          } else {
-            imagesToShow = allImages.filter(img => img.category === filter);
-          }
-
-          displayImages(imagesToShow);
+  // Load all Cloudinary images via Netlify function
+  async function loadCloudinaryImages() {
+    try {
+      const res = await fetch("/.netlify/functions/get-images");
+      if (res.ok) {
+        const urls = await res.json();
+        
+        // Clear existing uploaded images
+        uploadedImages = [];
+        
+        // Add Cloudinary images to uploadedImages
+        urls.forEach(url => {
+          const uploadedImage = {
+            src: url,
+            title: "Uploaded Image",
+            category: "uploaded"
+          };
+          
+          uploadedImages.push(uploadedImage);
         });
-      });
+        
+        // Update allImages to include uploaded images
+        allImages = [...images, ...uploadedImages];
+        
+        // Display all images
+        displayImages(allImages);
+        
+        console.log(`Loaded ${urls.length} images from database`);
+      } else {
+        throw new Error('Failed to fetch images');
+      }
+    } catch (err) {
+      console.error("Error loading Cloudinary images:", err);
+      // Fallback: display static images if Cloudinary function fails
+      displayImages(allImages);
+    }
+  }
 
-      // Lightbox controls
-      lightboxClose.addEventListener('click', closeLightbox);
-      prevBtn.addEventListener('click', showPrevImage);
-      nextBtn.addEventListener('click', showNextImage);
+  // Display images in the gallery
+  function displayImages(imagesToShow) {
+    gallery.innerHTML = '';
 
-      // Close lightbox when clicking outside the image
-      lightbox.addEventListener('click', (e) => {
-        if (e.target === lightbox) {
-          closeLightbox();
-        }
-      });
-
-      // Keyboard navigation
-      document.addEventListener('keydown', (e) => {
-        if (lightbox.classList.contains('active')) {
-          if (e.key === 'Escape') closeLightbox();
-          if (e.key === 'ArrowLeft') showPrevImage();
-          if (e.key === 'ArrowRight') showNextImage();
-        }
-      });
+    if (imagesToShow.length === 0) {
+      gallery.innerHTML = '<p style="text-align: center; grid-column: 1 / -1; padding: 40px; color: #7f8c8d;">No images found</p>';
+      return;
     }
 
-    // Setup Cloudinary Upload Widget
-    function setupCloudinaryWidget() {
-      const myWidget = cloudinary.createUploadWidget({
-        cloudName: cloudName,
-        uploadPreset: uploadPreset
-      }, (error, result) => {
-        if (!error && result && result.event === "success") {
-          console.log("Uploaded:", result.info.secure_url);
+    imagesToShow.forEach((image, index) => {
+      const galleryItem = document.createElement('div');
+      galleryItem.className = `gallery-item ${image.category}`;
 
+      galleryItem.innerHTML = `
+        <img src="${image.src}" alt="${image.title || 'Uploaded image'}" class="gallery-img">
+        <div class="gallery-info">
+          <h3 class="gallery-title">${image.title || 'Uploaded Image'}</h3>
+          ${image.description ? `<p class="gallery-desc">${image.description}</p>` : ''}
+        </div>
+      `;
+
+      galleryItem.addEventListener('click', () => openLightbox(index, imagesToShow));
+      gallery.appendChild(galleryItem);
+    });
+  }
+
+  // Setup event listeners
+  function setupEventListeners() {
+    // Filter buttons
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        // Update active button
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Filter images
+        const filter = btn.getAttribute('data-filter');
+        let imagesToShow;
+
+        if (filter === 'all') {
+          imagesToShow = allImages;
+        } else if (filter === 'uploaded') {
+          imagesToShow = uploadedImages;
+        } else {
+          imagesToShow = allImages.filter(img => img.category === filter);
+        }
+
+        displayImages(imagesToShow);
+      });
+    });
+
+    // Lightbox controls
+    lightboxClose.addEventListener('click', closeLightbox);
+    prevBtn.addEventListener('click', showPrevImage);
+    nextBtn.addEventListener('click', showNextImage);
+
+    // Close lightbox when clicking outside the image
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox) {
+        closeLightbox();
+      }
+    });
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      if (lightbox.classList.contains('active')) {
+        if (e.key === 'Escape') closeLightbox();
+        if (e.key === 'ArrowLeft') showPrevImage();
+        if (e.key === 'ArrowRight') showNextImage();
+      }
+    });
+  }
+
+  // Setup Cloudinary Upload Widget
+  function setupCloudinaryWidget() {
+    const myWidget = cloudinary.createUploadWidget({
+      cloudName: cloudName,
+      uploadPreset: uploadPreset
+    }, async (error, result) => {
+      if (!error && result && result.event === "success") {
+        console.log("Uploaded to Cloudinary:", result.info.secure_url);
+
+        try {
+          // Save to Neon database
+          await saveImageToDatabase(result.info.secure_url);
+          
           // Add uploaded image to the gallery
           const uploadedImage = {
             src: result.info.secure_url,
@@ -477,42 +513,52 @@
           filterBtns.forEach(b => b.classList.remove('active'));
           document.querySelector('[data-filter="uploaded"]').classList.add('active');
           displayImages(uploadedImages);
+
+          console.log('Image successfully saved and displayed');
+
+        } catch (dbError) {
+          console.error('Failed to save image to database:', dbError);
+          alert('Image uploaded to Cloudinary but failed to save to database. It may not persist after refresh.');
         }
-      });
+      }
+    });
 
-      document.getElementById("upload_widget").addEventListener("click", () => {
-        myWidget.open();
-      }, false);
-    }
+    document.getElementById("upload_widget").addEventListener("click", () => {
+      myWidget.open();
+    }, false);
+  }
 
-    // Open lightbox with selected image
-    function openLightbox(index, currentImageSet) {
-      currentImageIndex = index;
-      lightboxImg.src = currentImageSet[currentImageIndex].src;
-      lightbox.classList.add('active');
-      document.body.style.overflow = 'hidden'; // Prevent scrolling
-    }
+  // Open lightbox with selected image
+  function openLightbox(index, imageSet) {
+    currentImageIndex = index;
+    currentImageSet = imageSet;
+    lightboxImg.src = currentImageSet[currentImageIndex].src;
+    lightbox.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
 
-    // Close lightbox
-    function closeLightbox() {
-      lightbox.classList.remove('active');
-      document.body.style.overflow = 'auto'; // Re-enable scrolling
-    }
+  // Close lightbox
+  function closeLightbox() {
+    lightbox.classList.remove('active');
+    document.body.style.overflow = 'auto';
+  }
 
-    // Show previous image in lightbox
-    function showPrevImage() {
-      currentImageIndex = (currentImageIndex - 1 + currentImageSet.length) % currentImageSet.length;
-      lightboxImg.src = currentImageSet[currentImageIndex].src;
-    }
+  // Show previous image in lightbox
+  function showPrevImage() {
+    currentImageIndex = (currentImageIndex - 1 + currentImageSet.length) % currentImageSet.length;
+    lightboxImg.src = currentImageSet[currentImageIndex].src;
+  }
 
-    // Show next image in lightbox
-    function showNextImage() {
-      currentImageIndex = (currentImageIndex + 1) % currentImageSet.length;
-      lightboxImg.src = currentImageSet[currentImageIndex].src;
-    }
+  // Show next image in lightbox
+  function showNextImage() {
+    currentImageIndex = (currentImageIndex + 1) % currentImageSet.length;
+    lightboxImg.src = currentImageSet[currentImageIndex].src;
+  }
 
-    // Initialize the gallery when the page loads
-    document.addEventListener('DOMContentLoaded', initGallery);
-  </script>
+  // Initialize the gallery when the page loads
+  document.addEventListener('DOMContentLoaded', initGallery);
+</script>
+ 
 </body>
 </html>
+
