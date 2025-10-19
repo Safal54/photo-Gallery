@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Responsive Image Gallery with Upload</title>
+  <title>Image Gallery</title>
   <script src="https://widget.cloudinary.com/v2.0/global/all.js"></script>
   <style>
     * {
@@ -246,8 +246,8 @@
 <body>
   <div class="container">
     <header>
-      <h1>Image Gallery</h1>
-      <p class="subtitle">A responsive gallery that preserves original image sizes and aspect ratios</p>
+      <h1>🌤️ Cloudinary Gallery</h1>
+      <p class="subtitle">A responsive gallery with Cloudinary integration and image upload</p>
     </header>
 
     <div class="upload-section">
@@ -277,13 +277,22 @@
   </div>
 
   <footer>
-    <p>Responsive Image Gallery &copy; 2023</p>
+    <p>Cloudinary Image Gallery &copy; 2023</p>
   </footer>
 
   <script>
     // Cloudinary configuration
     const cloudName = "dak7kqowo";
     const uploadPreset = "vd9hzqkh";
+
+    // DOM elements
+    const gallery = document.getElementById('imageGallery');
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightboxImg');
+    const lightboxClose = document.getElementById('lightboxClose');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const filterBtns = document.querySelectorAll('.filter-btn');
 
     // Image data
     const images = [
@@ -318,7 +327,7 @@
         category: "travel"
       },
       {
-        src: "https://images.unsplash.com-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80",
+        src: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80",
         title: "Mountain Adventure",
         description: "Hiker enjoying mountain views",
         category: "travel"
@@ -327,25 +336,51 @@
 
     // Array to store uploaded images
     let uploadedImages = [];
-
-    // DOM elements
-    const gallery = document.getElementById('imageGallery');
-    const lightbox = document.getElementById('lightbox');
-    const lightboxImg = document.getElementById('lightboxImg');
-    const lightboxClose = document.getElementById('lightboxClose');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    const filterBtns = document.querySelectorAll('.filter-btn');
+    let allImages = [...images];
 
     // Current image index for lightbox navigation
     let currentImageIndex = 0;
-    let allImages = [...images];
+    let currentImageSet = allImages;
 
     // Initialize gallery
     function initGallery() {
-      displayImages(allImages);
+      loadCloudinaryImages();
       setupEventListeners();
       setupCloudinaryWidget();
+    }
+
+    // Load all Cloudinary images via Netlify function
+    async function loadCloudinaryImages() {
+      try {
+        const res = await fetch("/.netlify/functions/get-images");
+        if (res.ok) {
+          const urls = await res.json();
+          
+          // Add Cloudinary images to uploadedImages
+          urls.forEach(url => {
+            const uploadedImage = {
+              src: url,
+              title: "Cloudinary Image",
+              category: "uploaded"
+            };
+            
+            // Check if this image is already in uploadedImages
+            if (!uploadedImages.some(img => img.src === url)) {
+              uploadedImages.push(uploadedImage);
+            }
+          });
+          
+          // Update allImages to include uploaded images
+          allImages = [...images, ...uploadedImages];
+          
+          // Display all images
+          displayImages(allImages);
+        }
+      } catch (err) {
+        console.error("Error loading Cloudinary images:", err);
+        // Fallback: display static images if Cloudinary function fails
+        displayImages(allImages);
+      }
     }
 
     // Display images in the gallery
@@ -357,12 +392,12 @@
         galleryItem.className = `gallery-item ${image.category}`;
 
         galleryItem.innerHTML = `
-                    <img src="${image.src}" alt="${image.title || 'Uploaded image'}" class="gallery-img">
-                    <div class="gallery-info">
-                        <h3 class="gallery-title">${image.title || 'Uploaded Image'}</h3>
-                        ${image.description ? `<p class="gallery-desc">${image.description}</p>` : ''}
-                    </div>
-                `;
+          <img src="${image.src}" alt="${image.title || 'Uploaded image'}" class="gallery-img">
+          <div class="gallery-info">
+            <h3 class="gallery-title">${image.title || 'Uploaded Image'}</h3>
+            ${image.description ? `<p class="gallery-desc">${image.description}</p>` : ''}
+          </div>
+        `;
 
         galleryItem.addEventListener('click', () => openLightbox(index, imagesToShow));
         gallery.appendChild(galleryItem);
@@ -416,7 +451,7 @@
       });
     }
 
-    // Setup Cloudinary upload widget
+    // Setup Cloudinary Upload Widget
     function setupCloudinaryWidget() {
       const myWidget = cloudinary.createUploadWidget({
         cloudName: cloudName,
@@ -466,24 +501,18 @@
 
     // Show previous image in lightbox
     function showPrevImage() {
-      // This would need to be implemented with the current image set
-      // For simplicity, we're using allImages
-      currentImageIndex = (currentImageIndex - 1 + allImages.length) % allImages.length;
-      lightboxImg.src = allImages[currentImageIndex].src;
+      currentImageIndex = (currentImageIndex - 1 + currentImageSet.length) % currentImageSet.length;
+      lightboxImg.src = currentImageSet[currentImageIndex].src;
     }
 
     // Show next image in lightbox
     function showNextImage() {
-      // This would need to be implemented with the current image set
-      // For simplicity, we're using allImages
-      currentImageIndex = (currentImageIndex + 1) % allImages.length;
-      lightboxImg.src = allImages[currentImageIndex].src;
+      currentImageIndex = (currentImageIndex + 1) % currentImageSet.length;
+      lightboxImg.src = currentImageSet[currentImageIndex].src;
     }
 
     // Initialize the gallery when the page loads
     document.addEventListener('DOMContentLoaded', initGallery);
   </script>
 </body>
-
-
 </html>
