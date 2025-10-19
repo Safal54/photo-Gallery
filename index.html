@@ -3,64 +3,361 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cloudinary Gallery with Supabase</title>
+  <title>Romantic Cloudinary Gallery</title>
   <script src="https://widget.cloudinary.com/v2.0/global/all.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
-    /* Your existing CSS styles here */
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
+
     body {
-      background-color: #f5f7fa;
-      color: #333;
+      background: linear-gradient(135deg, #f9f0ff 0%, #fce4ec 50%, #f3e5f5 100%);
+      color: #5d4037;
       line-height: 1.6;
       padding: 20px;
+      font-family: 'Poppins', sans-serif;
+      min-height: 100vh;
     }
+
     .container {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
       padding: 20px;
     }
+
     header {
       text-align: center;
-      padding: 30px 0;
+      padding: 40px 0;
       margin-bottom: 30px;
     }
+
     h1 {
-      font-size: 2.5rem;
-      color: #2c3e50;
-      margin-bottom: 10px;
+      font-family: 'Dancing Script', cursive;
+      font-size: 4rem;
+      color: #8e24aa;
+      margin-bottom: 15px;
+      font-weight: 700;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
     }
-    /* ... include all your existing CSS ... */
+
+    .subtitle {
+      font-size: 1.3rem;
+      color: #7b1fa2;
+      max-width: 600px;
+      margin: 0 auto 30px;
+      font-weight: 300;
+    }
+
+    .upload-section {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    #upload_widget {
+      padding: 15px 30px;
+      background: linear-gradient(45deg, #e91e63, #9c27b0);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(156, 39, 176, 0.3);
+      font-family: 'Poppins', sans-serif;
+    }
+
+    #upload_widget:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(156, 39, 176, 0.4);
+      background: linear-gradient(45deg, #d81b60, #8e24aa);
+    }
+
+    .gallery-controls {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      padding: 10px 20px;
+      background: rgba(255, 255, 255, 0.7);
+      color: #7b1fa2;
+      border: 2px solid #e1bee7;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 500;
+      backdrop-filter: blur(10px);
+    }
+
+    .filter-btn:hover {
+      background: rgba(255, 255, 255, 0.9);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .filter-btn.active {
+      background: #8e24aa;
+      color: white;
+      border-color: #8e24aa;
+    }
+
+    .gallery {
+      column-count: 3;
+      column-gap: 25px;
+      margin-bottom: 40px;
+    }
+
+    .gallery-item {
+      break-inside: avoid;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+      margin-bottom: 25px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+
+    .gallery-item:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    }
+
+    .gallery-img {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: transform 0.5s ease;
+    }
+
+    .gallery-item:hover .gallery-img {
+      transform: scale(1.05);
+    }
+
+    .gallery-info {
+      padding: 20px;
+    }
+
+    .gallery-title {
+      font-family: 'Dancing Script', cursive;
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+      color: #6a1b9a;
+      font-weight: 600;
+    }
+
+    .gallery-desc {
+      color: #8d6e63;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .uploaded-badge {
+      background: linear-gradient(45deg, #e91e63, #9c27b0);
+      color: white;
+      padding: 3px 12px;
+      border-radius: 15px;
+      font-size: 0.75rem;
+      margin-left: 10px;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .lightbox {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.95);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .lightbox.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    .lightbox-img {
+      max-width: 90%;
+      max-height: 90%;
+      object-fit: contain;
+      border-radius: 10px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: 30px;
+      right: 40px;
+      color: white;
+      font-size: 3rem;
+      cursor: pointer;
+      transition: color 0.3s ease;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .lightbox-close:hover {
+      color: #e91e63;
+    }
+
+    .lightbox-nav {
+      position: absolute;
+      top: 50%;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 30px;
+      transform: translateY(-50%);
+    }
+
+    .lightbox-btn {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: none;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      font-size: 1.8rem;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .lightbox-btn:hover {
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    footer {
+      text-align: center;
+      padding: 30px;
+      color: #7b1fa2;
+      border-top: 1px solid rgba(156, 39, 176, 0.2);
+      margin-top: 40px;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #7b1fa2;
+      font-size: 1.2rem;
+      grid-column: 1 / -1;
+    }
+
+    /* Heart animation */
+    .heart {
+      position: fixed;
+      font-size: 20px;
+      pointer-events: none;
+      animation: float 6s ease-in-out infinite;
+      opacity: 0.7;
+      z-index: -1;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-20px) rotate(180deg); }
+    }
+
+    /* Responsive design */
+    @media (max-width: 1200px) {
+      .gallery {
+        column-count: 2;
+      }
+      
+      h1 {
+        font-size: 3.5rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .gallery {
+        column-count: 1;
+      }
+      
+      h1 {
+        font-size: 3rem;
+      }
+      
+      .gallery-controls {
+        gap: 10px;
+      }
+      
+      .lightbox-close {
+        top: 20px;
+        right: 25px;
+        font-size: 2.5rem;
+      }
+      
+      .lightbox-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 10px;
+      }
+      
+      h1 {
+        font-size: 2.5rem;
+      }
+      
+      .subtitle {
+        font-size: 1.1rem;
+      }
+    }
   </style>
 </head>
 <body>
+  <!-- Floating hearts for romantic effect -->
+  <div class="heart" style="left: 10%; animation-delay: 0s;">❤️</div>
+  <div class="heart" style="left: 20%; animation-delay: 1s;">💖</div>
+  <div class="heart" style="left: 30%; animation-delay: 2s;">💕</div>
+  <div class="heart" style="left: 40%; animation-delay: 3s;">💗</div>
+  <div class="heart" style="left: 50%; animation-delay: 4s;">💓</div>
+  <div class="heart" style="left: 60%; animation-delay: 5s;">💞</div>
+  <div class="heart" style="left: 70%; animation-delay: 0.5s;">💘</div>
+  <div class="heart" style="left: 80%; animation-delay: 1.5s;">💝</div>
+  <div class="heart" style="left: 90%; animation-delay: 2.5s;">❤️</div>
+
   <div class="container">
     <header>
-      <h1>🌤️ Cloudinary Gallery</h1>
-      <p class="subtitle">Images stored in Supabase - Access from any device</p>
+      <h1>Romantic Moments Gallery</h1>
+      <p class="subtitle">Capture and cherish your beautiful memories forever</p>
     </header>
 
     <div class="upload-section">
-      <button id="upload_widget">Upload Image</button>
+      <button id="upload_widget">💝 Upload Your Memory</button>
     </div>
 
     <div class="gallery-controls">
-      <button class="filter-btn active" data-filter="all">All Images</button>
-      <button class="filter-btn" data-filter="sample">Sample Images</button>
+      <button class="filter-btn active" data-filter="all">All Memories</button>
+      <button class="filter-btn" data-filter="sample">Sample Moments</button>
       <button class="filter-btn" data-filter="uploaded">My Uploads</button>
     </div>
 
     <div class="gallery" id="imageGallery">
-      <div class="loading">Loading images...</div>
+      <div class="loading">Loading your beautiful memories...</div>
     </div>
   </div>
 
-  <!-- Lightbox HTML (same as before) -->
   <div class="lightbox" id="lightbox">
     <span class="lightbox-close" id="lightboxClose">&times;</span>
     <img class="lightbox-img" id="lightboxImg" src="" alt="">
@@ -71,7 +368,7 @@
   </div>
 
   <footer>
-    <p>Cloudinary + Supabase Gallery &copy; 2023</p>
+    <p>Made with 💖 • Romantic Cloudinary Gallery &copy; 2023</p>
   </footer>
 
   <script>
@@ -93,18 +390,42 @@
     const nextBtn = document.getElementById('nextBtn');
     const filterBtns = document.querySelectorAll('.filter-btn');
 
-    // Sample images
+    // Romantic sample images
     const sampleImages = [
       {
-        src: "https://images.unsplash.com/photo-1501854140801-50d01698950b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1275&q=80",
-        title: "Mountain Landscape",
-        description: "Beautiful mountain scenery with trees and lake",
+        src: "https://images.unsplash.com/photo-1516487106395-f3f7b150102a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80",
+        title: "Sunset Romance",
+        description: "A beautiful couple watching the sunset together",
         category: "sample"
       },
       {
-        src: "https://images.unsplash.com/photo-1519681393784-d120267933ba?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80",
-        title: "Snowy Peaks",
-        description: "Majestic snow-covered mountain peaks",
+        src: "https://images.unsplash.com/photo-1518568814500-bf0f8d125f46?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80",
+        title: "Morning Bliss",
+        description: "Peaceful morning moments filled with love",
+        category: "sample"
+      },
+      {
+        src: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80",
+        title: "Golden Hour",
+        description: "Golden light creating magical moments",
+        category: "sample"
+      },
+      {
+        src: "https://images.unsplash.com/photo-1529390079861-591de354faf5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80",
+        title: "Beach Memories",
+        description: "Walking hand in hand along the shore",
+        category: "sample"
+      },
+      {
+        src: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=764&q=80",
+        title: "Portrait of Love",
+        description: "Capturing the essence of true connection",
+        category: "sample"
+      },
+      {
+        src: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80",
+        title: "Urban Romance",
+        description: "Love stories in the heart of the city",
         category: "sample"
       }
     ];
@@ -164,7 +485,7 @@
       gallery.innerHTML = '';
 
       if (imagesToShow.length === 0) {
-        gallery.innerHTML = '<p style="text-align: center; grid-column: 1 / -1; padding: 40px; color: #7f8c8d;">No images found</p>';
+        gallery.innerHTML = '<p style="text-align: center; padding: 40px; color: #7b1fa2; font-size: 1.2rem;">No beautiful memories yet... Upload your first one! 💝</p>';
         return;
       }
 
@@ -176,10 +497,10 @@
           <div class="gallery-info">
             <h3 class="gallery-title">
               ${image.title}
-              ${image.category === 'uploaded' ? '<span class="uploaded-badge">My Upload</span>' : ''}
+              ${image.category === 'uploaded' ? '<span class="uploaded-badge">My Memory</span>' : ''}
             </h3>
             ${image.description ? `<p class="gallery-desc">${image.description}</p>` : ''}
-            ${image.created_at ? `<p class="gallery-desc" style="font-size: 0.8rem; color: #95a5a6;">Uploaded: ${new Date(image.created_at).toLocaleDateString()}</p>` : ''}
+            ${image.created_at ? `<p class="gallery-desc" style="font-size: 0.8rem; color: #8d6e63;">Uploaded: ${new Date(image.created_at).toLocaleDateString()}</p>` : ''}
           </div>
         `;
         galleryItem.addEventListener('click', () => openLightbox(index, imagesToShow));
@@ -191,15 +512,37 @@
     function setupCloudinaryWidget() {
       const myWidget = cloudinary.createUploadWidget({
         cloudName: cloudName,
-        uploadPreset: uploadPreset
+        uploadPreset: uploadPreset,
+        sources: ['local', 'camera', 'url'],
+        multiple: false,
+        clientAllowedFormats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+        maxFileSize: 5000000,
+        theme: 'purple',
+        styles: {
+          palette: {
+            window: "#FFFFFF",
+            sourceBg: "#F5F5F5",
+            windowBorder: "#9c27b0",
+            tabIcon: "#8e24aa",
+            inactiveTabIcon: "#BA68C8",
+            menuIcons: "#8e24aa",
+            link: "#e91e63",
+            action: "#e91e63",
+            inProgress: "#e91e63",
+            complete: "#4CAF50",
+            error: "#F44336",
+            textDark: "#4A148C",
+            textLight: "#FFFFFF"
+          }
+        }
       }, async (error, result) => {
         if (!error && result && result.event === "success") {
           console.log("Uploaded to Cloudinary:", result.info.secure_url);
 
           const imageData = {
             src: result.info.secure_url,
-            title: result.info.original_filename || "My Uploaded Image",
-            description: "Uploaded via Cloudinary",
+            title: result.info.original_filename ? result.info.original_filename.replace(/\.[^/.]+$/, "") : "My Special Memory",
+            description: "A beautiful moment captured forever 💖",
             category: "uploaded",
             public_id: result.info.public_id,
             created_at: new Date().toISOString()
@@ -221,11 +564,16 @@
             document.querySelector('[data-filter="uploaded"]').classList.add('active');
             displayImages(uploadedImages);
 
-            console.log('Image saved to Supabase and displayed');
+            console.log('Memory saved to Supabase and displayed');
           } catch (error) {
             console.error('Failed to save to Supabase:', error);
-            alert('Image uploaded but failed to save to database.');
+            alert('Memory uploaded but failed to save to database. Please try again.');
           }
+        }
+        
+        if (error) {
+          console.error('Upload error:', error);
+          alert('Error uploading your memory. Please try again.');
         }
       });
 
@@ -234,7 +582,7 @@
       });
     }
 
-    // Event listeners and other functions (same as before)
+    // Event listeners
     function setupEventListeners() {
       filterBtns.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -252,7 +600,7 @@
         });
       });
 
-      // Lightbox event listeners (same as before)
+      // Lightbox event listeners
       lightboxClose.addEventListener('click', closeLightbox);
       prevBtn.addEventListener('click', showPrevImage);
       nextBtn.addEventListener('click', showNextImage);
@@ -268,7 +616,7 @@
       });
     }
 
-    // Lightbox functions (same as before)
+    // Lightbox functions
     function openLightbox(index, imageSet) {
       currentImageIndex = index;
       currentImageSet = imageSet;
@@ -297,6 +645,3 @@
   </script>
 </body>
 </html>
-
-
-
