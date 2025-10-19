@@ -1,7 +1,7 @@
 // netlify/functions/get-images.js
 import { neon } from '@neondatabase/serverless';
 
-export async function handler() {
+export async function handler(event) {
   // Handle CORS
   if (event.httpMethod === 'OPTIONS') {
     return {
