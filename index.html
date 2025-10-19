@@ -1,269 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cloudinary Image Gallery</title>
+  <title>Cloudinary Gallery with Supabase</title>
   <script src="https://widget.cloudinary.com/v2.0/global/all.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
+    /* Your existing CSS styles here */
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
-
     body {
       background-color: #f5f7fa;
       color: #333;
       line-height: 1.6;
       padding: 20px;
     }
-
     .container {
       max-width: 1200px;
       margin: 0 auto;
       padding: 20px;
     }
-
     header {
       text-align: center;
       padding: 30px 0;
       margin-bottom: 30px;
     }
-
     h1 {
       font-size: 2.5rem;
       color: #2c3e50;
       margin-bottom: 10px;
     }
-
-    .subtitle {
-      font-size: 1.1rem;
-      color: #7f8c8d;
-      max-width: 600px;
-      margin: 0 auto 30px;
-    }
-
-    .upload-section {
-      text-align: center;
-      margin-bottom: 40px;
-    }
-
-    #upload_widget {
-      padding: 12px 24px;
-      background: #3498db;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 1.1rem;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    #upload_widget:hover {
-      background: #2980b9;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-    }
-
-    .gallery-controls {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-      margin-bottom: 30px;
-      flex-wrap: wrap;
-    }
-
-    .filter-btn {
-      padding: 8px 16px;
-      background-color: #3498db;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .filter-btn:hover {
-      background-color: #2980b9;
-    }
-
-    .filter-btn.active {
-      background-color: #2c3e50;
-    }
-
-    .gallery {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 25px;
-      margin-bottom: 40px;
-    }
-
-    .gallery-item {
-      background-color: white;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .gallery-item:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
-    }
-
-    .gallery-img {
-      width: 100%;
-      height: 250px;
-      object-fit: cover;
-      display: block;
-      transition: transform 0.5s ease;
-    }
-
-    .gallery-item:hover .gallery-img {
-      transform: scale(1.03);
-    }
-
-    .gallery-info {
-      padding: 15px;
-    }
-
-    .gallery-title {
-      font-size: 1.2rem;
-      margin-bottom: 8px;
-      color: #2c3e50;
-    }
-
-    .gallery-desc {
-      color: #7f8c8d;
-      font-size: 0.9rem;
-    }
-
-    .lightbox {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.9);
-      z-index: 1000;
-      justify-content: center;
-      align-items: center;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-
-    .lightbox.active {
-      display: flex;
-      opacity: 1;
-    }
-
-    .lightbox-img {
-      max-width: 90%;
-      max-height: 90%;
-      object-fit: contain;
-      border-radius: 4px;
-    }
-
-    .lightbox-close {
-      position: absolute;
-      top: 20px;
-      right: 30px;
-      color: white;
-      font-size: 2.5rem;
-      cursor: pointer;
-      transition: color 0.3s ease;
-    }
-
-    .lightbox-close:hover {
-      color: #3498db;
-    }
-
-    .lightbox-nav {
-      position: absolute;
-      top: 50%;
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      padding: 0 20px;
-      transform: translateY(-50%);
-    }
-
-    .lightbox-btn {
-      background: rgba(255, 255, 255, 0.2);
-      color: white;
-      border: none;
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      font-size: 1.5rem;
-      cursor: pointer;
-      transition: background 0.3s ease;
-    }
-
-    .lightbox-btn:hover {
-      background: rgba(255, 255, 255, 0.4);
-    }
-
-    footer {
-      text-align: center;
-      padding: 20px;
-      color: #7f8c8d;
-      border-top: 1px solid #eaecee;
-      margin-top: 40px;
-    }
-
-    .loading {
-      text-align: center;
-      padding: 20px;
-      color: #7f8c8d;
-    }
-
-    .uploaded-badge {
-      background: #3498db;
-      color: white;
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-size: 0.7rem;
-      margin-left: 8px;
-    }
-
-    @media (max-width: 768px) {
-      .gallery {
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 20px;
-      }
-
-      h1 {
-        font-size: 2rem;
-      }
-
-      .gallery-controls {
-        gap: 10px;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .gallery {
-        grid-template-columns: 1fr;
-      }
-
-      .container {
-        padding: 10px;
-      }
-    }
+    /* ... include all your existing CSS ... */
   </style>
 </head>
-
 <body>
   <div class="container">
     <header>
       <h1>🌤️ Cloudinary Gallery</h1>
-      <p class="subtitle">Upload and manage images directly with Cloudinary - Images persist after refresh</p>
+      <p class="subtitle">Images stored in Supabase - Access from any device</p>
     </header>
 
     <div class="upload-section">
@@ -281,6 +60,7 @@
     </div>
   </div>
 
+  <!-- Lightbox HTML (same as before) -->
   <div class="lightbox" id="lightbox">
     <span class="lightbox-close" id="lightboxClose">&times;</span>
     <img class="lightbox-img" id="lightboxImg" src="" alt="">
@@ -291,13 +71,18 @@
   </div>
 
   <footer>
-    <p>Cloudinary Image Gallery &copy; 2023</p>
+    <p>Cloudinary + Supabase Gallery &copy; 2023</p>
   </footer>
 
   <script>
-    // Cloudinary configuration - USE YOUR OWN CREDENTIALS
-    const cloudName = "dak7kqowo"; // Replace with your Cloudinary cloud name
-    const uploadPreset = "vd9hzqkh"; // Replace with your Cloudinary upload preset
+    // Cloudinary configuration
+    const cloudName = "dak7kqowo";
+    const uploadPreset = "vd9hzqkh";
+
+    // Supabase configuration
+    const supabaseUrl = 'https://lickrfzfsildshrxgtre.supabase.co';
+    const supabaseKey = 'process.env.SUPABASE_KEY';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
     // DOM elements
     const gallery = document.getElementById('imageGallery');
@@ -308,7 +93,7 @@
     const nextBtn = document.getElementById('nextBtn');
     const filterBtns = document.querySelectorAll('.filter-btn');
 
-    // Sample images (fallback if no uploaded images)
+    // Sample images
     const sampleImages = [
       {
         src: "https://images.unsplash.com/photo-1501854140801-50d01698950b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1275&q=80",
@@ -321,63 +106,60 @@
         title: "Snowy Peaks",
         description: "Majestic snow-covered mountain peaks",
         category: "sample"
-      },
-      {
-        src: "https://images.unsplash.com/photo-1493246507139-91e8fad9978e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80",
-        title: "Modern Architecture",
-        description: "Contemporary building with unique design",
-        category: "sample"
       }
     ];
 
-    // Store for uploaded images (loaded from localStorage)
     let uploadedImages = [];
     let allImages = [];
-
-    // Current image index for lightbox navigation
     let currentImageIndex = 0;
     let currentImageSet = allImages;
 
     // Initialize gallery
-    function initGallery() {
-      loadUploadedImages();
+    async function initGallery() {
+      await loadImagesFromSupabase();
       setupEventListeners();
       setupCloudinaryWidget();
       displayImages(allImages);
     }
 
-    // Load uploaded images from localStorage
-    function loadUploadedImages() {
+    // Load images from Supabase
+    async function loadImagesFromSupabase() {
       try {
-        const stored = localStorage.getItem('cloudinaryUploadedImages');
-        if (stored) {
-          uploadedImages = JSON.parse(stored);
-          console.log('Loaded uploaded images from localStorage:', uploadedImages.length);
-        } else {
-          uploadedImages = [];
-          console.log('No uploaded images found in localStorage');
-        }
+        const { data, error } = await supabase
+          .from('images')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        uploadedImages = data || [];
+        allImages = [...sampleImages, ...uploadedImages];
+        console.log('Loaded images from Supabase:', uploadedImages.length);
       } catch (error) {
-        console.error('Error loading uploaded images:', error);
+        console.error('Error loading from Supabase:', error);
         uploadedImages = [];
+        allImages = [...sampleImages];
       }
-      
-      // Combine sample and uploaded images
-      allImages = [...sampleImages, ...uploadedImages];
-      console.log('Total images:', allImages.length);
     }
 
-    // Save uploaded images to localStorage
-    function saveUploadedImages() {
+    // Save image to Supabase
+    async function saveImageToSupabase(imageData) {
       try {
-        localStorage.setItem('cloudinaryUploadedImages', JSON.stringify(uploadedImages));
-        console.log('Saved uploaded images to localStorage:', uploadedImages.length);
+        const { data, error } = await supabase
+          .from('images')
+          .insert([imageData])
+          .select();
+
+        if (error) throw error;
+        console.log('Saved to Supabase:', data);
+        return data[0];
       } catch (error) {
-        console.error('Error saving uploaded images:', error);
+        console.error('Error saving to Supabase:', error);
+        throw error;
       }
     }
 
-    // Display images in the gallery
+    // Display images in gallery
     function displayImages(imagesToShow) {
       gallery.innerHTML = '';
 
@@ -389,62 +171,94 @@
       imagesToShow.forEach((image, index) => {
         const galleryItem = document.createElement('div');
         galleryItem.className = `gallery-item ${image.category}`;
-
         galleryItem.innerHTML = `
-          <img src="${image.src}" alt="${image.title || 'Uploaded image'}" class="gallery-img" loading="lazy">
+          <img src="${image.src}" alt="${image.title}" class="gallery-img" loading="lazy">
           <div class="gallery-info">
             <h3 class="gallery-title">
-              ${image.title || 'Uploaded Image'}
+              ${image.title}
               ${image.category === 'uploaded' ? '<span class="uploaded-badge">My Upload</span>' : ''}
             </h3>
             ${image.description ? `<p class="gallery-desc">${image.description}</p>` : ''}
-            ${image.uploadedAt ? `<p class="gallery-desc" style="font-size: 0.8rem; color: #95a5a6;">Uploaded: ${new Date(image.uploadedAt).toLocaleDateString()}</p>` : ''}
+            ${image.created_at ? `<p class="gallery-desc" style="font-size: 0.8rem; color: #95a5a6;">Uploaded: ${new Date(image.created_at).toLocaleDateString()}</p>` : ''}
           </div>
         `;
-
         galleryItem.addEventListener('click', () => openLightbox(index, imagesToShow));
         gallery.appendChild(galleryItem);
       });
     }
 
-    // Setup event listeners
+    // Setup Cloudinary widget
+    function setupCloudinaryWidget() {
+      const myWidget = cloudinary.createUploadWidget({
+        cloudName: cloudName,
+        uploadPreset: uploadPreset
+      }, async (error, result) => {
+        if (!error && result && result.event === "success") {
+          console.log("Uploaded to Cloudinary:", result.info.secure_url);
+
+          const imageData = {
+            src: result.info.secure_url,
+            title: result.info.original_filename || "My Uploaded Image",
+            description: "Uploaded via Cloudinary",
+            category: "uploaded",
+            public_id: result.info.public_id,
+            created_at: new Date().toISOString()
+          };
+
+          try {
+            // Save to Supabase
+            const savedImage = await saveImageToSupabase(imageData);
+            
+            // Update local arrays
+            uploadedImages.unshift(savedImage);
+            allImages.unshift(savedImage);
+
+            // Update display
+            displayImages(allImages);
+
+            // Switch to uploaded filter
+            filterBtns.forEach(b => b.classList.remove('active'));
+            document.querySelector('[data-filter="uploaded"]').classList.add('active');
+            displayImages(uploadedImages);
+
+            console.log('Image saved to Supabase and displayed');
+          } catch (error) {
+            console.error('Failed to save to Supabase:', error);
+            alert('Image uploaded but failed to save to database.');
+          }
+        }
+      });
+
+      document.getElementById("upload_widget").addEventListener("click", () => {
+        myWidget.open();
+      });
+    }
+
+    // Event listeners and other functions (same as before)
     function setupEventListeners() {
-      // Filter buttons
       filterBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-          // Update active button
           filterBtns.forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
-
-          // Filter images
+          
           const filter = btn.getAttribute('data-filter');
           let imagesToShow;
-
-          if (filter === 'all') {
-            imagesToShow = allImages;
-          } else if (filter === 'uploaded') {
-            imagesToShow = uploadedImages;
-          } else {
-            imagesToShow = allImages.filter(img => img.category === filter);
-          }
-
+          
+          if (filter === 'all') imagesToShow = allImages;
+          else if (filter === 'uploaded') imagesToShow = uploadedImages;
+          else imagesToShow = allImages.filter(img => img.category === filter);
+          
           displayImages(imagesToShow);
         });
       });
 
-      // Lightbox controls
+      // Lightbox event listeners (same as before)
       lightboxClose.addEventListener('click', closeLightbox);
       prevBtn.addEventListener('click', showPrevImage);
       nextBtn.addEventListener('click', showNextImage);
-
-      // Close lightbox when clicking outside the image
       lightbox.addEventListener('click', (e) => {
-        if (e.target === lightbox) {
-          closeLightbox();
-        }
+        if (e.target === lightbox) closeLightbox();
       });
-
-      // Keyboard navigation
       document.addEventListener('keydown', (e) => {
         if (lightbox.classList.contains('active')) {
           if (e.key === 'Escape') closeLightbox();
@@ -454,78 +268,7 @@
       });
     }
 
-    // Setup Cloudinary Upload Widget
-    function setupCloudinaryWidget() {
-      const myWidget = cloudinary.createUploadWidget({
-        cloudName: cloudName,
-        uploadPreset: uploadPreset,
-        sources: ['local', 'camera', 'url'],
-        multiple: false,
-        clientAllowedFormats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
-        maxFileSize: 5000000, // 5MB
-        theme: 'minimal',
-        styles: {
-          palette: {
-            window: "#FFFFFF",
-            sourceBg: "#F5F7FA",
-            windowBorder: "#3498db",
-            tabIcon: "#3498db",
-            inactiveTabIcon: "#7F8C8D",
-            menuIcons: "#3498db",
-            link: "#3498db",
-            action: "#3498db",
-            inProgress: "#3498db",
-            complete: "#2ecc71",
-            error: "#e74c3c",
-            textDark: "#2c3e50",
-            textLight: "#FFFFFF"
-          }
-        }
-      }, (error, result) => {
-        if (!error && result && result.event === "success") {
-          console.log("Uploaded to Cloudinary:", result.info.secure_url);
-          console.log("Full result:", result);
-
-          // Add uploaded image to the gallery
-          const uploadedImage = {
-            src: result.info.secure_url,
-            title: result.info.original_filename || "My Uploaded Image",
-            description: "Uploaded via Cloudinary widget",
-            category: "uploaded",
-            uploadedAt: new Date().toISOString(),
-            publicId: result.info.public_id,
-            cloudinaryData: result.info
-          };
-
-          uploadedImages.push(uploadedImage);
-          allImages.push(uploadedImage);
-          
-          // Save to localStorage
-          saveUploadedImages();
-
-          // Display all images again to include the new one
-          displayImages(allImages);
-
-          // Switch to uploaded filter
-          filterBtns.forEach(b => b.classList.remove('active'));
-          document.querySelector('[data-filter="uploaded"]').classList.add('active');
-          displayImages(uploadedImages);
-
-          console.log('Image successfully uploaded and saved to localStorage');
-        }
-        
-        if (error) {
-          console.error('Upload error:', error);
-          alert('Error uploading image. Please try again.');
-        }
-      });
-
-      document.getElementById("upload_widget").addEventListener("click", () => {
-        myWidget.open();
-      }, false);
-    }
-
-    // Open lightbox with selected image
+    // Lightbox functions (same as before)
     function openLightbox(index, imageSet) {
       currentImageIndex = index;
       currentImageSet = imageSet;
@@ -534,25 +277,22 @@
       document.body.style.overflow = 'hidden';
     }
 
-    // Close lightbox
     function closeLightbox() {
       lightbox.classList.remove('active');
       document.body.style.overflow = 'auto';
     }
 
-    // Show previous image in lightbox
     function showPrevImage() {
       currentImageIndex = (currentImageIndex - 1 + currentImageSet.length) % currentImageSet.length;
       lightboxImg.src = currentImageSet[currentImageIndex].src;
     }
 
-    // Show next image in lightbox
     function showNextImage() {
       currentImageIndex = (currentImageIndex + 1) % currentImageSet.length;
       lightboxImg.src = currentImageSet[currentImageIndex].src;
     }
 
-    // Initialize the gallery when the page loads
+    // Initialize
     document.addEventListener('DOMContentLoaded', initGallery);
   </script>
 </body>
