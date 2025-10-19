@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Image Gallery</title>
+  <title>Cloudinary Image Gallery</title>
   <script src="https://widget.cloudinary.com/v2.0/global/all.js"></script>
   <style>
     * {
@@ -117,7 +117,8 @@
 
     .gallery-img {
       width: 100%;
-      height: auto;
+      height: 250px;
+      object-fit: cover;
       display: block;
       transition: transform 0.5s ease;
     }
@@ -216,6 +217,12 @@
       margin-top: 40px;
     }
 
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #7f8c8d;
+    }
+
     @media (max-width: 768px) {
       .gallery {
         grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -247,7 +254,7 @@
   <div class="container">
     <header>
       <h1>🌤️ Cloudinary Gallery</h1>
-      <p class="subtitle">A responsive gallery with Cloudinary integration and image upload</p>
+      <p class="subtitle">Upload and manage images directly with Cloudinary - No database required</p>
     </header>
 
     <div class="upload-section">
@@ -256,14 +263,12 @@
 
     <div class="gallery-controls">
       <button class="filter-btn active" data-filter="all">All Images</button>
-      <button class="filter-btn" data-filter="nature">Nature</button>
-      <button class="filter-btn" data-filter="architecture">Architecture</button>
-      <button class="filter-btn" data-filter="travel">Travel</button>
-      <button class="filter-btn" data-filter="uploaded">Uploaded</button>
+      <button class="filter-btn" data-filter="sample">Sample Images</button>
+      <button class="filter-btn" data-filter="uploaded">My Uploads</button>
     </div>
 
     <div class="gallery" id="imageGallery">
-      <!-- Images will be inserted here by JavaScript -->
+      <div class="loading">Loading images...</div>
     </div>
   </div>
 
@@ -279,10 +284,11 @@
   <footer>
     <p>Cloudinary Image Gallery &copy; 2023</p>
   </footer>
+
   <script>
-    // Cloudinary configuration
-    const cloudName = "dak7kqowo";
-    const uploadPreset = "vd9hzqkh";
+    // Cloudinary configuration - USE YOUR OWN CREDENTIALS
+    const cloudName = "dak7kqowo"; // Replace with your Cloudinary cloud name
+    const uploadPreset = "vd9hzqkh"; // Replace with your Cloudinary upload preset
 
     // DOM elements
     const gallery = document.getElementById('imageGallery');
@@ -293,121 +299,64 @@
     const nextBtn = document.getElementById('nextBtn');
     const filterBtns = document.querySelectorAll('.filter-btn');
 
-    // Image data
-    const images = [
+    // Sample images (fallback if no uploaded images)
+    const sampleImages = [
       {
         src: "https://images.unsplash.com/photo-1501854140801-50d01698950b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1275&q=80",
         title: "Mountain Landscape",
         description: "Beautiful mountain scenery with trees and lake",
-        category: "nature"
+        category: "sample"
       },
       {
         src: "https://images.unsplash.com/photo-1519681393784-d120267933ba?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80",
         title: "Snowy Peaks",
         description: "Majestic snow-covered mountain peaks",
-        category: "nature"
+        category: "sample"
       },
       {
         src: "https://images.unsplash.com/photo-1493246507139-91e8fad9978e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80",
         title: "Modern Architecture",
         description: "Contemporary building with unique design",
-        category: "architecture"
+        category: "sample"
       },
       {
         src: "https://images.unsplash.com/photo-1513584684374-8bab748fbf90?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1165&q=80",
         title: "City Skyline",
         description: "Urban landscape with skyscrapers",
-        category: "architecture"
+        category: "sample"
       },
       {
         src: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1121&q=80",
         title: "Road Trip",
         description: "Scenic road through beautiful landscape",
-        category: "travel"
+        category: "sample"
       },
       {
         src: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80",
         title: "Mountain Adventure",
         description: "Hiker enjoying mountain views",
-        category: "travel"
+        category: "sample"
       }
     ];
 
-    // Array to store uploaded images
-    let uploadedImages = [];
-    let allImages = [...images];
+    // Store for uploaded images (loaded from localStorage)
+    let uploadedImages = JSON.parse(localStorage.getItem('uploadedImages')) || [];
+    let allImages = [...sampleImages, ...uploadedImages];
 
     // Current image index for lightbox navigation
     let currentImageIndex = 0;
     let currentImageSet = allImages;
 
-    // Save image URL to database
-    async function saveImageToDatabase(imageUrl) {
-      try {
-        const response = await fetch('/.netlify/functions/save-image', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ url: imageUrl })
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to save image to database');
-        }
-
-        const result = await response.json();
-        console.log('Image saved to database:', result);
-        return result;
-      } catch (error) {
-        console.error('Error saving image to database:', error);
-        throw error;
-      }
-    }
-
     // Initialize gallery
     function initGallery() {
-      loadCloudinaryImages();
       setupEventListeners();
       setupCloudinaryWidget();
+      displayImages(allImages);
     }
 
-    // Load all Cloudinary images via Netlify function
-    async function loadCloudinaryImages() {
-      try {
-        const res = await fetch("/.netlify/functions/get-images");
-        if (res.ok) {
-          const urls = await res.json();
-
-          // Clear existing uploaded images
-          uploadedImages = [];
-
-          // Add Cloudinary images to uploadedImages
-          urls.forEach(url => {
-            const uploadedImage = {
-              src: url,
-              title: "Uploaded Image",
-              category: "uploaded"
-            };
-
-            uploadedImages.push(uploadedImage);
-          });
-
-          // Update allImages to include uploaded images
-          allImages = [...images, ...uploadedImages];
-
-          // Display all images
-          displayImages(allImages);
-
-          console.log(`Loaded ${urls.length} images from database`);
-        } else {
-          throw new Error('Failed to fetch images');
-        }
-      } catch (err) {
-        console.error("Error loading Cloudinary images:", err);
-        // Fallback: display static images if Cloudinary function fails
-        displayImages(allImages);
-      }
+    // Save uploaded images to localStorage
+    function saveUploadedImages() {
+      localStorage.setItem('uploadedImages', JSON.stringify(uploadedImages));
     }
 
     // Display images in the gallery
@@ -424,12 +373,13 @@
         galleryItem.className = `gallery-item ${image.category}`;
 
         galleryItem.innerHTML = `
-        <img src="${image.src}" alt="${image.title || 'Uploaded image'}" class="gallery-img">
-        <div class="gallery-info">
-          <h3 class="gallery-title">${image.title || 'Uploaded Image'}</h3>
-          ${image.description ? `<p class="gallery-desc">${image.description}</p>` : ''}
-        </div>
-      `;
+          <img src="${image.src}" alt="${image.title || 'Uploaded image'}" class="gallery-img">
+          <div class="gallery-info">
+            <h3 class="gallery-title">${image.title || 'Uploaded Image'}</h3>
+            ${image.description ? `<p class="gallery-desc">${image.description}</p>` : ''}
+            ${image.category === 'uploaded' ? '<p class="gallery-desc" style="color: #3498db; font-size: 0.8rem;">Uploaded by you</p>' : ''}
+          </div>
+        `;
 
         galleryItem.addEventListener('click', () => openLightbox(index, imagesToShow));
         gallery.appendChild(galleryItem);
@@ -487,39 +437,61 @@
     function setupCloudinaryWidget() {
       const myWidget = cloudinary.createUploadWidget({
         cloudName: cloudName,
-        uploadPreset: uploadPreset
-      }, async (error, result) => {
+        uploadPreset: uploadPreset,
+        sources: ['local', 'camera', 'url'],
+        multiple: false,
+        clientAllowedFormats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+        maxFileSize: 5000000, // 5MB
+        theme: 'minimal',
+        styles: {
+          palette: {
+            window: "#FFFFFF",
+            sourceBg: "#F5F7FA",
+            windowBorder: "#3498db",
+            tabIcon: "#3498db",
+            inactiveTabIcon: "#7F8C8D",
+            menuIcons: "#3498db",
+            link: "#3498db",
+            action: "#3498db",
+            inProgress: "#3498db",
+            complete: "#2ecc71",
+            error: "#e74c3c",
+            textDark: "#2c3e50",
+            textLight: "#FFFFFF"
+          }
+        }
+      }, (error, result) => {
         if (!error && result && result.event === "success") {
           console.log("Uploaded to Cloudinary:", result.info.secure_url);
 
-          try {
-            // Save to Neon database
-            await saveImageToDatabase(result.info.secure_url);
+          // Add uploaded image to the gallery
+          const uploadedImage = {
+            src: result.info.secure_url,
+            title: "My Uploaded Image",
+            description: "Uploaded via Cloudinary widget",
+            category: "uploaded"
+          };
 
-            // Add uploaded image to the gallery
-            const uploadedImage = {
-              src: result.info.secure_url,
-              title: "Uploaded Image",
-              category: "uploaded"
-            };
+          uploadedImages.push(uploadedImage);
+          allImages.push(uploadedImage);
+          
+          // Save to localStorage
+          saveUploadedImages();
 
-            uploadedImages.push(uploadedImage);
-            allImages.push(uploadedImage);
+          // Display all images again to include the new one
+          displayImages(allImages);
 
-            // Display all images again to include the new one
-            displayImages(allImages);
+          // Switch to uploaded filter
+          filterBtns.forEach(b => b.classList.remove('active'));
+          document.querySelector('[data-filter="uploaded"]').classList.add('active');
+          displayImages(uploadedImages);
 
-            // Switch to uploaded filter
-            filterBtns.forEach(b => b.classList.remove('active'));
-            document.querySelector('[data-filter="uploaded"]').classList.add('active');
-            displayImages(uploadedImages);
-
-            console.log('Image successfully saved and displayed');
-
-          } catch (dbError) {
-            console.error('Failed to save image to database:', dbError);
-            alert('Image uploaded to Cloudinary but failed to save to database. It may not persist after refresh.');
-          }
+          console.log('Image successfully uploaded and displayed');
+        }
+        
+        if (error) {
+          console.error('Upload error:', error);
+          alert('Error uploading image. Please try again.');
         }
       });
 
@@ -558,7 +530,5 @@
     // Initialize the gallery when the page loads
     document.addEventListener('DOMContentLoaded', initGallery);
   </script>
-
 </body>
-
 </html>
