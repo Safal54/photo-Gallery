@@ -223,6 +223,15 @@
       color: #7f8c8d;
     }
 
+    .uploaded-badge {
+      background: #3498db;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      margin-left: 8px;
+    }
+
     @media (max-width: 768px) {
       .gallery {
         grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -254,7 +263,7 @@
   <div class="container">
     <header>
       <h1>🌤️ Cloudinary Gallery</h1>
-      <p class="subtitle">Upload and manage images directly with Cloudinary - No database required</p>
+      <p class="subtitle">Upload and manage images directly with Cloudinary - Images persist after refresh</p>
     </header>
 
     <div class="upload-section">
@@ -318,30 +327,12 @@
         title: "Modern Architecture",
         description: "Contemporary building with unique design",
         category: "sample"
-      },
-      {
-        src: "https://images.unsplash.com/photo-1513584684374-8bab748fbf90?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1165&q=80",
-        title: "City Skyline",
-        description: "Urban landscape with skyscrapers",
-        category: "sample"
-      },
-      {
-        src: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1121&q=80",
-        title: "Road Trip",
-        description: "Scenic road through beautiful landscape",
-        category: "sample"
-      },
-      {
-        src: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80",
-        title: "Mountain Adventure",
-        description: "Hiker enjoying mountain views",
-        category: "sample"
       }
     ];
 
     // Store for uploaded images (loaded from localStorage)
-    let uploadedImages = JSON.parse(localStorage.getItem('uploadedImages')) || [];
-    let allImages = [...sampleImages, ...uploadedImages];
+    let uploadedImages = [];
+    let allImages = [];
 
     // Current image index for lightbox navigation
     let currentImageIndex = 0;
@@ -349,14 +340,41 @@
 
     // Initialize gallery
     function initGallery() {
+      loadUploadedImages();
       setupEventListeners();
       setupCloudinaryWidget();
       displayImages(allImages);
     }
 
+    // Load uploaded images from localStorage
+    function loadUploadedImages() {
+      try {
+        const stored = localStorage.getItem('cloudinaryUploadedImages');
+        if (stored) {
+          uploadedImages = JSON.parse(stored);
+          console.log('Loaded uploaded images from localStorage:', uploadedImages.length);
+        } else {
+          uploadedImages = [];
+          console.log('No uploaded images found in localStorage');
+        }
+      } catch (error) {
+        console.error('Error loading uploaded images:', error);
+        uploadedImages = [];
+      }
+      
+      // Combine sample and uploaded images
+      allImages = [...sampleImages, ...uploadedImages];
+      console.log('Total images:', allImages.length);
+    }
+
     // Save uploaded images to localStorage
     function saveUploadedImages() {
-      localStorage.setItem('uploadedImages', JSON.stringify(uploadedImages));
+      try {
+        localStorage.setItem('cloudinaryUploadedImages', JSON.stringify(uploadedImages));
+        console.log('Saved uploaded images to localStorage:', uploadedImages.length);
+      } catch (error) {
+        console.error('Error saving uploaded images:', error);
+      }
     }
 
     // Display images in the gallery
@@ -373,11 +391,14 @@
         galleryItem.className = `gallery-item ${image.category}`;
 
         galleryItem.innerHTML = `
-          <img src="${image.src}" alt="${image.title || 'Uploaded image'}" class="gallery-img">
+          <img src="${image.src}" alt="${image.title || 'Uploaded image'}" class="gallery-img" loading="lazy">
           <div class="gallery-info">
-            <h3 class="gallery-title">${image.title || 'Uploaded Image'}</h3>
+            <h3 class="gallery-title">
+              ${image.title || 'Uploaded Image'}
+              ${image.category === 'uploaded' ? '<span class="uploaded-badge">My Upload</span>' : ''}
+            </h3>
             ${image.description ? `<p class="gallery-desc">${image.description}</p>` : ''}
-            ${image.category === 'uploaded' ? '<p class="gallery-desc" style="color: #3498db; font-size: 0.8rem;">Uploaded by you</p>' : ''}
+            ${image.uploadedAt ? `<p class="gallery-desc" style="font-size: 0.8rem; color: #95a5a6;">Uploaded: ${new Date(image.uploadedAt).toLocaleDateString()}</p>` : ''}
           </div>
         `;
 
@@ -463,13 +484,17 @@
       }, (error, result) => {
         if (!error && result && result.event === "success") {
           console.log("Uploaded to Cloudinary:", result.info.secure_url);
+          console.log("Full result:", result);
 
           // Add uploaded image to the gallery
           const uploadedImage = {
             src: result.info.secure_url,
-            title: "My Uploaded Image",
+            title: result.info.original_filename || "My Uploaded Image",
             description: "Uploaded via Cloudinary widget",
-            category: "uploaded"
+            category: "uploaded",
+            uploadedAt: new Date().toISOString(),
+            publicId: result.info.public_id,
+            cloudinaryData: result.info
           };
 
           uploadedImages.push(uploadedImage);
@@ -486,7 +511,7 @@
           document.querySelector('[data-filter="uploaded"]').classList.add('active');
           displayImages(uploadedImages);
 
-          console.log('Image successfully uploaded and displayed');
+          console.log('Image successfully uploaded and saved to localStorage');
         }
         
         if (error) {
